@@ -33,6 +33,8 @@ async def settle(pg):
     # wait for the camera glide (menu -> play framing) to finish: headless Chrome renders at ~3 fps
     await poll(pg, "__td.api.settled()", 30000)
 
+RADIAL_SHOWN = "(() => { const b = document.querySelectorAll('#radial .rb'); return b.length > 0 && [...b].every((e) => getComputedStyle(e).opacity !== '0'); })()"
+
 async def tap(pg, sel, mobile):
     if mobile: await pg.tap(sel)
     else: await pg.click(sel)
@@ -73,7 +75,7 @@ async def run(b, name, w, h, mobile, lang):
     pad = await pg.evaluate("(() => { const p = __td.api.pads()[2]; const s = __td.api.screenOf(p[0], p[1]); return {c: p[0], r: p[1], x: s.x, y: s.y}; })()")
     await tap_xy(pg, pad['x'], pad['y'], mobile)
     check(await poll(pg, "!document.getElementById('radial').classList.contains('hidden') && document.querySelectorAll('#radial [data-build]').length === 5", 4000), 'tap pad opens 5-tower radial')
-    await pg.wait_for_timeout(500); await shot('03-radial')
+    await poll(pg, RADIAL_SHOWN, 8000); await pg.wait_for_timeout(500); await shot('03-radial')
     c0 = await pg.evaluate("__td.game.credits")
     await pg.dispatch_event('#radial [data-build="laser"]', 'pointerdown')
     check(await poll(pg, "__td.game.towers.size === 1", 3000), 'laser built')
@@ -89,7 +91,7 @@ async def run(b, name, w, h, mobile, lang):
     await pg.wait_for_timeout(700)
     await tap_xy(pg, pad['x'], pad['y'], mobile)
     check(await poll(pg, "!!document.querySelector('#radial [data-up]')", 3000), 'tap tower opens upgrade/sell')
-    await pg.wait_for_timeout(500); await shot('04-tower-menu')
+    await poll(pg, RADIAL_SHOWN, 8000); await pg.wait_for_timeout(500); await shot('04-tower-menu')
     await pg.dispatch_event('#radial [data-sell]', 'pointerdown')
     check(await poll(pg, "__td.game.towers.size === 0", 3000), 'tower sold')
     cs = await pg.evaluate("__td.game.credits")
