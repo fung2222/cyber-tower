@@ -12,7 +12,10 @@ import { TowerAudio } from './audio.js';
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
 // CYBER ARCADE hub launch params (see cyber-arcade docs/MONETIZATION.md §8). Without ?hub=1 the web build is the full free game.
-const HUB = { on: Q.get('hub') === '1', tier: Q.get('tier') || 'free', ads: Q.get('ads'), trial: Q.get('trial') === '1', trialLeft: Q.get('trialLeft'), ret: Q.get('ret') };
+const ENT = (() => { try { return JSON.parse(localStorage.getItem('cyber.entitlement') || 'null'); } catch { return null; } })();   // written by the hub
+const HUB = { on: Q.get('hub') === '1', tier: Q.get('tier') || ENT?.tier || 'free', ads: Q.get('ads'), trial: Q.get('trial') === '1', trialLeft: Q.get('trialLeft'), ret: Q.get('ret') };
+// launched by the hub without an explicit ads param: fall back to the cached entitlement (Free tier → ads=1, paid → ads=0)
+if (HUB.on && HUB.ads == null && ENT?.tier) HUB.ads = ENT.tier === 'free' ? '1' : '0';
 // Interstitial (game over only) runs ONLY when the launch URL says ads=1 (a Free player in the hub). ads=0 / no param → never.
 // (?adsim=1 forces the simulated flow for testing; a future standalone native build without the hub may opt in via Platform.isNative.)
 const ADS_ON = HUB.ads === '1' || (!HUB.on && (flags.adsim || Platform.isNative));
