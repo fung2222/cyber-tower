@@ -12,11 +12,12 @@ import { TowerAudio } from './audio.js';
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
 // CYBER ARCADE hub launch params (see cyber-arcade docs/MONETIZATION.md §8). Without ?hub=1 the web build is the full free game.
-const HUB = { on: Q.get('hub') === '1', tier: Q.get('tier') || 'free', ads: Q.get('ads'), trial: Q.get('hub') === '1' && Q.get('trial') === '1', trialLeft: Q.get('trialLeft'), ret: Q.get('ret') };
-// Interstitial (game over only): in the hub only when ads=1 (Free player). Outside the hub the normal cyber-kit rules apply (a no-op on the web build).
-const ADS_ON = HUB.on ? HUB.ads === '1' : true;
-// Web stub: when the hub says ads=1 we show cyber-kit's simulated ad overlays (same as ?adsim=1) so the flow is testable without AdMob.
-const AD_FLAGS = { adsim: flags.adsim || (HUB.on && HUB.ads === '1'), debug: flags.debug };
+const HUB = { on: Q.get('hub') === '1', tier: Q.get('tier') || 'free', ads: Q.get('ads'), trial: Q.get('trial') === '1', trialLeft: Q.get('trialLeft'), ret: Q.get('ret') };
+// Interstitial (game over only) runs ONLY when the launch URL says ads=1 (a Free player in the hub). ads=0 / no param → never.
+// (?adsim=1 forces the simulated flow for testing; a future standalone native build without the hub may opt in via Platform.isNative.)
+const ADS_ON = HUB.ads === '1' || (!HUB.on && (flags.adsim || Platform.isNative));
+// Web stub: when ads=1 we show cyber-kit's simulated ad overlays (same as ?adsim=1) so the flow is testable without AdMob.
+const AD_FLAGS = { adsim: flags.adsim || HUB.ads === '1', debug: flags.debug };
 const store = createStore(GAME_ID);
 if (flags.reset) store.clear();
 const ui = new CyberUI({ screens: ['start', 'maps', 'pause', 'over', 'win', 'trial'] });
@@ -45,7 +46,9 @@ stage.onResize((w, h, pr) => particles.resize(h, pr));
 const waves = new Shockwaves(scene, 16);
 const fx = new FxState();
 const audio = new TowerAudio(store); ui.setMuted(audio.muted);
-const ads = createAds({ gameId: GAME_ID, ...ADS, flags: AD_FLAGS, onAdOpen: (on) => audio.duckAll(on) });
+// ?adfast=1 (tests only): drop the launch grace / cooldown / break counter so the game-over interstitial stub shows on the first break
+const AD_CAPS = flags.get('adfast') === '1' ? { graceSec: 0, interstitialCooldownSec: 0, breaksBetweenInterstitials: 1 } : {};
+const ads = createAds({ gameId: GAME_ID, ...ADS, ...AD_CAPS, flags: AD_FLAGS, onAdOpen: (on) => audio.duckAll(on) });
 
 const S = { state: 'attract', demo: !!flags.demo, game: null, mapId: 1, speed: store.getNum('speed', 1) === 2 ? 2 : 1, ai: null, sel: null, t: 0, runT: 0, seen: new Set(), newRecord: false, endT: 0, hub: HUB };
 window.__td = S;   // test hook

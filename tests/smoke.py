@@ -67,6 +67,7 @@ async def run(b, name, w, h, mobile, lang):
     await tap(pg, '#screen-maps [data-map="1"]', mobile)
     check(await poll(pg, "__td.state === 'playing' && __td.mapId === 1"), 'map 1 starts')
     await pg.wait_for_timeout(2500)   # let the intro banner fade
+    await poll(pg, "document.getElementById('banner').classList.contains('hidden')", 15000)
     await settle(pg)
     # tap a pad -> radial build menu
     pad = await pg.evaluate("(() => { const p = __td.api.pads()[2]; const s = __td.api.screenOf(p[0], p[1]); return {c: p[0], r: p[1], x: s.x, y: s.y}; })()")
@@ -148,8 +149,9 @@ async def run(b, name, w, h, mobile, lang):
         r = await pg.evaluate("__td.api.ff(20)")
         if r['wave'] >= 12 or r['state'] == 'lost': break
     check(r['wave'] >= 11, f'endless passes wave 10 milestone ({r})')
+    await poll(pg, "document.getElementById('banner').classList.contains('hidden')", 15000)
     await pg.wait_for_timeout(600)
-    if name == 'desktop': await shot('08-endless')
+    await shot('08-endless')
     await pg.evaluate("__td.api.lose()")
     await poll(pg, "__td.state === 'over'", 10000)
     bw = await pg.evaluate("parseInt(localStorage.getItem(Object.keys(localStorage).find(k => k.includes('cyber-tower') && k.includes('bestWave'))) || '0')")
@@ -201,6 +203,53 @@ async def trial(b, lang, hub):
     check(not errs, f'trial: zero console errors ({len(errs)})')
     await ctx.close()
 
+async def ads_check(b):
+    # ads=1 (Free player in the hub): the only interstitial is at game over (Retry/Menu); rewarded continue is an opt-in stub.
+    # ads=0 (paid tier): never an interstitial. ?adfast=1 removes the launch grace / cooldown so the stub shows on the first break.
+    for ads_on in (1, 0):
+        print(f'== ads={ads_on}')
+        ctx = await b.new_context(viewport={'width': 412, 'height': 915}, device_scale_factor=2, is_mobile=True, has_touch=True)
+        pg = await ctx.new_page(); errs = []
+        pg.on('pageerror', lambda e: errs.append('pageerror: ' + str(e)))
+        pg.on('console', lambda m: errs.append(f'console.{m.type}: {m.text}') if m.type == 'error' else None)
+        tier = 'free' if ads_on else 'gold'
+        await pg.goto(f'{BASE}?lang=en&hub=1&tier={tier}&ads={ads_on}&adfast=1')
+        await poll(pg, "window.__td && __td.state === 'attract'")
+        check(await pg.evaluate("__td.api.ads().on") == bool(ads_on), f'ads={ads_on}: interstitials {"enabled" if ads_on else "disabled"}')
+        await pg.tap('#btn-campaign'); await poll(pg, "__td.state === 'maps'")
+        await pg.tap('#screen-maps [data-map="1"]'); await poll(pg, "__td.state === 'playing'")
+        # a win must never trigger an interstitial
+        await pg.evaluate("__td.api.win()"); await poll(pg, "__td.state === 'win'", 8000)
+        await pg.tap('#btn-win-retry'); await poll(pg, "__td.state === 'playing'", 8000)
+        check(await pg.evaluate("__td.api.ads().breaks") == 0, f'ads={ads_on}: no ad break on win')
+        await pg.evaluate("__td.api.wave(2); __td.api.lose()")
+        check(await poll(pg, "__td.state === 'over'", 10000), f'ads={ads_on}: game over')
+        if ads_on:
+            await pg.tap('#btn-revive')
+            check(await poll(pg, "!!document.querySelector('.ck-adsim')", 4000), 'rewarded continue shows the ad stub')
+            await pg.wait_for_timeout(500); await pg.screenshot(path=f'{OUT}/ads-rewarded-stub.png')
+            check(await poll(pg, "__td.state === 'playing' && __td.game.continued && __td.game.hp === 10", 8000), 'rewarded stub grants +10 core HP')
+            await pg.evaluate("__td.api.lose()"); await poll(pg, "__td.state === 'over'", 10000)
+        await pg.tap('#btn-retry')
+        if ads_on:
+            check(await poll(pg, "!!document.querySelector('.ck-adsim')", 4000), 'game over Retry shows the interstitial stub')
+            await pg.wait_for_timeout(500); await pg.screenshot(path=f'{OUT}/ads-interstitial-stub.png')
+            check(await poll(pg, "__td.state === 'playing' && !document.querySelector('.ck-adsim')", 8000), 'interstitial closes -> new run')
+            check(await pg.evaluate("__td.api.ads().shown.interstitial") == 1, 'exactly one interstitial shown')
+        else:
+            check(await poll(pg, "__td.state === 'playing'", 6000), 'ads=0: retry starts a run')
+            check(await pg.evaluate("!document.querySelector('.ck-adsim') && __td.api.ads().breaks === 0"), 'ads=0: no interstitial at game over')
+        if errs: print('  errors:', json.dumps(errs, ensure_ascii=False)[:1500])
+        check(not errs, f'ads={ads_on}: zero console errors ({len(errs)})')
+        await ctx.close()
+    # trial=1 is honoured even without hub=1
+    ctx = await b.new_context(viewport={'width': 412, 'height': 915}, is_mobile=True, has_touch=True)
+    pg = await ctx.new_page()
+    await pg.goto(f'{BASE}?lang=en&trial=1'); await poll(pg, "window.__td && __td.state === 'attract'")
+    await pg.tap('#btn-campaign'); await poll(pg, "__td.state === 'maps'")
+    check(await pg.evaluate("document.querySelectorAll('#screen-maps .map-card.trial').length") == 6, 'trial=1 without hub=1 also locks maps 3-8')
+    await ctx.close()
+
 async def demo(b):
     print('== demo')
     ctx = await b.new_context(viewport={'width': 1280, 'height': 800})
@@ -218,13 +267,18 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path=CHROME, args=ARGS)
         hub = os.environ.get('HUB_URL', BASE + 'tests/fake-hub.html')
-        await run(b, 'phone', 412, 915, True, 'zh')
-        await run(b, 'desktop', 1280, 800, False, 'en')
-        await run(b, 'phone', 412, 915, True, 'en')
-        await run(b, 'desktop', 1280, 800, False, 'zh')
-        await trial(b, 'zh', hub)
-        await trial(b, 'en', hub)
-        await demo(b)
+        only = set(filter(None, os.environ.get('SMOKE_ONLY', '').split(',')))
+        want = lambda k: not only or k in only
+        if want('run'):
+            await run(b, 'phone', 412, 915, True, 'zh')
+            await run(b, 'desktop', 1280, 800, False, 'en')
+            await run(b, 'phone', 412, 915, True, 'en')
+            await run(b, 'desktop', 1280, 800, False, 'zh')
+        if want('trial'):
+            await trial(b, 'zh', hub)
+            await trial(b, 'en', hub)
+        if want('ads'): await ads_check(b)
+        if want('demo'): await demo(b)
         await b.close()
     print(f'\n{"PASS" if not fails else "FAIL"}: {len(fails)} failure(s)')
     for f in fails: print('  -', f)
