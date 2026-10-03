@@ -72,7 +72,7 @@ Android back: menu → pause → resume; game over → menu; maps/win/trial → 
 
 ## 6. CYBER ARCADE hub hooks
 URL params (from the hub's launch URL): `?hub=1&tier=free|silver|gold&ads=0|1&trial=0|1&trialLeft=N&ret=<hub page URL>`.
-- `trial=1` (honoured with or without `hub=1`): maps 3–8 show a 🔒 試玩 tag and open the **trial prompt**; endless stops after wave 10 (`Game` option `stopAfter`) → trial prompt. The prompt's **解鎖金級 UNLOCK GOLD** button returns to `ret` + `store=1` (same-origin only, no open redirect), else `history.back()`, else a toast. The HUD shows a TRIAL tag; the start screen shows "trialLeft" runs left today.
+- `trial=1` (honoured with or without `hub=1`): maps 3–8 show a 🔒 試玩 tag and open the **trial prompt**; endless stops after wave 10 (`Game` option `stopAfter`) → trial prompt. The prompt's **解鎖金級 UNLOCK GOLD** button returns to `ret` + `store=1` (same-origin only, no open redirect), else writes `localStorage cyber.arcade.openStore = {game, t}` and does `history.back()` (the hub opens its unlock sheet when it sees that note, so the unlisted hub path never has to travel in the game URL), else a toast. The HUD shows a TRIAL tag; the start screen shows "trialLeft" runs left today.
 - `ads=1` (Free player in the hub): the game-over interstitial **stub** runs (cyber-kit's simulated ad overlay on the web; AdMob in the app), capped by `ADS`. `ads=0` (paid tier) or no `ads` param: **never** an interstitial. When the hub launches with `hub=1` but no `ads` param, the game falls back to `localStorage cyber.entitlement.tier` (free → ads on, silver/gold → off). A future standalone native build without the hub may opt in via `Platform.isNative`.
 
 ### Ad placements

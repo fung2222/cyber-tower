@@ -330,7 +330,8 @@ function showTrial(kind) {
 function returnToHub() {
   // back to the CYBER ARCADE hub's unlock screen. `ret` must be same-origin (no open redirect).
   try { if (HUB.ret) { const u = new URL(HUB.ret, location.href); if (u.origin === location.origin) { u.searchParams.set('store', '1'); S.lastReturn = u.toString(); location.href = u.toString(); return; } } } catch { /* ignore */ }
-  if (HUB.on && history.length > 1) { history.back(); return; }
+  // no ret: leave a same-origin note for the hub (it opens its unlock sheet on return) and go back to it
+  if (HUB.on && history.length > 1) { try { localStorage.setItem('cyber.arcade.openStore', JSON.stringify({ game: GAME_ID, t: Date.now() })); } catch { /* */ } history.back(); return; }
   ui.toast(t('noHub'), 2200);
 }
 let demoIdx = 0;
