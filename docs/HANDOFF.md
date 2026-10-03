@@ -92,7 +92,7 @@ js/view.js       Three.js board: glass slab + grid shader, flowing path tiles, p
 js/audio.js      TowerAudio (cyber-kit SynthAudio, 'chill' music, per-tower SFX)
 js/strings.js    zh-HK / EN strings
 js/main.js       states, input, radial menus, camera framing, effects, hub hooks, ads, save
-vendor/cyber-kit cyber-kit v0.2.1
+vendor/cyber-kit cyber-kit v0.3.0
 tests/           logic.test.mjs, balance.mjs, smoke.py, demo_run.py, fake-hub.html
 ```
 Test hook: `window.__td` (state, game, speed, mapId, `api.ff(sec) / tap(c,r) / pads() / screenOf / autopilot / lose / win / wave(n) / money(n) / unlockAll / settled`).
@@ -116,3 +116,7 @@ As DATA FUSE (Capacitor 8 + `@capacitor-community/admob` v8; app id suggestion `
 
 ## 11. Verification log
 - **2026-10-03 (v1.1):** `node --test tests/` 11/11 · `node tests/balance.mjs` 0.5/0.8/1.0 clear all 8 maps (table §4) · `tests/demo_run.py` in headless Chrome reproduces the 0.8 table (endless lost at wave 61), zero console errors · `tests/smoke.py` **PASS, 177 checks, 0 failures** (412×915 touch + 1280×800, zh + en, trial, ads=1 / ads=0, demo) · live https://fung2222.github.io/cyber-tower/ loads with zero console errors (phone zh + desktop en) · end-to-end on the live origin: hub prototype → TRY → game with `hub=1&tier=free&ads=1&trial=1&trialLeft=2` → map 3 → unlock prompt → back to the hub with its unlock sheet open.
+
+## Audio loudness + glow (cyber-kit v0.3.0, 2026-10-03)
+- Audio: kit loudness model (music ≈ −20 LUFS integrated, median SFX ≈ music level). This game: music 'chill', sfxTrimDb 0.4 in `js/audio.js`. Re-measure after changing sounds: `python3 ../cyber-kit/tests/loudness.py http://127.0.0.1:18940 <dir>:<AudioClass> --kit /cyber-kit` (see kit docs/API.md "Loudness"). Keep music −20 ± 1 LUFS and SFX/BGM 0 ± 2 dB.
+- Glow: `createStage` values are the HIGH look; default is LOW (crisp). Shared pref `localStorage cyber.glow`, `?glow=low|high`. Pause screen has a GLOW: LOW/HIGH button (`ui.glowToggle(stage)`).

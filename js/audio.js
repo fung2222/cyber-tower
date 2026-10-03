@@ -1,7 +1,7 @@
 // NEON BASTION sounds — distinct synth SFX per tower (rate-limited so big defences stay pleasant) + 'chill' synthwave music.
 import { SynthAudio, mtof } from 'cyber-kit/audio/synth.js';
 export class TowerAudio extends SynthAudio {
-  constructor(store) { super({ store, music: 'chill' }); this.last = {}; }
+  constructor(store) { super({ store, music: 'chill', sfxTrimDb: 0.4 }); this.last = {}; }
   gate(k, ms) { const n = performance.now(); if (n - (this.last[k] || 0) < ms) return false; this.last[k] = n; return true; }
   laser() { if (!this.gate('laser', 70)) return; this.osc({ type: 'square', f: 2400, f2: 1300, dur: 0.05, vol: 0.016, lp: 6000 }); }
   cryo() { if (!this.gate('cryo', 160)) return; this.noiseHit({ dur: 0.35, vol: 0.05, type: 'bandpass', f: 3200, f2: 900, q: 2 }); this.osc({ type: 'sine', f: 880, f2: 1320, dur: 0.18, vol: 0.025, send: 0.5 }); }

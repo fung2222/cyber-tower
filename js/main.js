@@ -25,6 +25,7 @@ const store = createStore(GAME_ID);
 if (flags.reset) store.clear();
 const ui = new CyberUI({ screens: ['start', 'maps', 'pause', 'over', 'win', 'trial'] });
 const stage = createStage({ canvas: $('scene'), bloom: 0.85, bloomRadius: 0.45, bloomThreshold: 0.8, fov: 40, exposure: 1.05, onFatal: (m) => ui.fatal(m) });
+ui.glowToggle(stage);   // cyber-kit v0.3.0: GLOW LOW/HIGH button in the pause screen (shared preference, LOW = crisp default)
 const { scene, camera } = stage;
 const theme = new ThemeController(); theme.set(1, true);
 const city = new NeonCity(stage, { floor: 'plain', floorY: -0.6, innerRadius: 10.5, buildings: 240, billboard: { zh: '霓虹堡壘', en: 'N E O N   B A S T I O N', pos: [0, 13, -20], width: 20 }, dustArea: 12, dustHeight: 5 });

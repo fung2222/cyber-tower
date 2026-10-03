@@ -35,7 +35,7 @@
 `?demo=1` AI 自動玩（`&level=1..8`，`0` = 無盡）· `?lang=en|zh` · `?fps=1` · `?quality=low` · `?reset=1` · `?adsim=1` · `?adfast=1`（測試用 tests only）· `?unlockall=1` · CYBER ARCADE 大廳 hub: `?hub=1&tier=free|silver|gold&ads=0|1&trial=0|1&trialLeft=N&ret=<hub URL>`
 
 ## 技術 Tech
-Three.js r169 + [cyber-kit](https://github.com/fung2222/cyber-kit) v0.2.1（`vendor/cyber-kit/`），冇 build step，可離線運行。所有模型都係程式生成嘅原創設計；音效同音樂全部合成。
+Three.js r169 + [cyber-kit](https://github.com/fung2222/cyber-kit) v0.3.0（`vendor/cyber-kit/`），冇 build step，可離線運行。所有模型都係程式生成嘅原創設計；音效同音樂全部合成。
 
 ## 開發 Development
 ```bash
