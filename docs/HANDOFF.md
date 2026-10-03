@@ -113,3 +113,6 @@ As DATA FUSE (Capacitor 8 + `@capacitor-community/admob` v8; app id suggestion `
 - The interstitial / rewarded ads are stubs on the web (cyber-kit simulated overlays); real AdMob unit ids are needed for the app build.
 - `cyber.entitlement` is only a fallback for the `ads` flag; trial caps always come from the `trial=1` URL param.
 - Ideas: targeting modes (first/strong/last), per-map modifiers, tower skins as cosmetic rewards, daily challenge seed.
+
+## 11. Verification log
+- **2026-10-03 (v1.1):** `node --test tests/` 11/11 · `node tests/balance.mjs` 0.5/0.8/1.0 clear all 8 maps (table §4) · `tests/demo_run.py` in headless Chrome reproduces the 0.8 table (endless lost at wave 61), zero console errors · `tests/smoke.py` **PASS, 177 checks, 0 failures** (412×915 touch + 1280×800, zh + en, trial, ads=1 / ads=0, demo) · live https://fung2222.github.io/cyber-tower/ loads with zero console errors (phone zh + desktop en) · end-to-end on the live origin: hub prototype → TRY → game with `hub=1&tier=free&ads=1&trial=1&trialLeft=2` → map 3 → unlock prompt → back to the hub with its unlock sheet open.
