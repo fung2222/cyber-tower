@@ -45,7 +45,7 @@ export function createAI({ skill = 1, early = true } = {}) {
       }
       if (best) g.upgrade(best);
     }
-    if (g.state === 'build' && g.towers.size >= 2) g.callWave();
+    if (g.state === 'build' && g.towers.size >= Math.max(1, Math.min(2, want))) g.callWave();   // weak (low-skill) pilots start with 1 tower
     // call the next wave early when the defence is comfortably ahead (keeps demos and sessions brisk)
     else if (early && g.canCallWave() && g.wave > 0 && g.enemies.length < 4 && g.enemies.every((e) => g.progress(e) < 0.4) && g.hp >= g.maxHp - 2) g.callWave();
   };

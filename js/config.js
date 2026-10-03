@@ -40,16 +40,16 @@ const THREAT = { runner: 1, tank: 4.2, shield: 2.6, splitter: 3, drone: 2.8 };
 
 // ---------------------------------------------------------------- maps
 // Paths are waypoint lists on the 9×13 grid [col, row]; first = spawn portal (edge), last = core. Segments are axis-aligned.
-// Build pads are generated next to the path (see buildMap). waves = campaign length; diff = HP multiplier; credits = start money.
+// Build pads are generated next to the path (see buildMap). waves = campaign length; diff = HP multiplier (ramps in over 8 waves; map 1 is a gentle tutorial at 0.85); credits = start money.
 export const MAPS = [
-  { id: 1, zh: '旺角', en: 'MONG KOK',       waves: 10, diff: 1.0,  credits: 180, pads: 18, theme: 1, path: [[1, 0], [1, 3], [7, 3], [7, 7], [1, 7], [1, 10], [5, 10], [5, 12]] },
-  { id: 2, zh: '廟街', en: 'TEMPLE STREET',  waves: 10, diff: 1.1, credits: 180, pads: 18, theme: 2, path: [[7, 0], [7, 2], [1, 2], [1, 5], [7, 5], [7, 8], [1, 8], [1, 11], [4, 11], [4, 12]] },
-  { id: 3, zh: '中環', en: 'CENTRAL',        waves: 10, diff: 1.2, credits: 190, pads: 17, theme: 3, path: [[1, 0], [1, 10], [4, 10], [4, 2], [7, 2], [7, 12]] },
-  { id: 4, zh: '九龍灣', en: 'KOWLOON BAY',  waves: 10, diff: 1.35, credits: 200, pads: 17, theme: 4, path: [[8, 2], [1, 2], [1, 10], [7, 10], [7, 5], [4, 5], [4, 7]] },
-  { id: 5, zh: '深水埗', en: 'SHAM SHUI PO', waves: 10, diff: 1.38, credits: 200, pads: 16, theme: 5, path: [[0, 1], [6, 1], [6, 4], [2, 4], [2, 7], [6, 7], [6, 10], [2, 10], [2, 12]] },
+  { id: 1, zh: '旺角', en: 'MONG KOK',       waves: 10, diff: 0.85,  credits: 180, pads: 18, theme: 1, path: [[1, 0], [1, 3], [7, 3], [7, 7], [1, 7], [1, 10], [5, 10], [5, 12]] },
+  { id: 2, zh: '廟街', en: 'TEMPLE STREET',  waves: 10, diff: 1.0, credits: 180, pads: 18, theme: 2, path: [[7, 0], [7, 2], [1, 2], [1, 5], [7, 5], [7, 8], [1, 8], [1, 11], [4, 11], [4, 12]] },
+  { id: 3, zh: '中環', en: 'CENTRAL',        waves: 10, diff: 1.15, credits: 190, pads: 17, theme: 3, path: [[1, 0], [1, 10], [4, 10], [4, 2], [7, 2], [7, 12]] },
+  { id: 4, zh: '九龍灣', en: 'KOWLOON BAY',  waves: 10, diff: 1.3, credits: 200, pads: 17, theme: 4, path: [[8, 2], [1, 2], [1, 10], [7, 10], [7, 5], [4, 5], [4, 7]] },
+  { id: 5, zh: '深水埗', en: 'SHAM SHUI PO', waves: 10, diff: 1.25, credits: 200, pads: 16, theme: 5, path: [[0, 1], [6, 1], [6, 4], [2, 4], [2, 7], [6, 7], [6, 10], [2, 10], [2, 12]] },
   { id: 6, zh: '尖沙咀', en: 'TSIM SHA TSUI', waves: 10, diff: 1.5, credits: 210, pads: 16, theme: 6, path: [[0, 0], [0, 2], [2, 2], [2, 4], [4, 4], [4, 6], [6, 6], [6, 8], [8, 8], [8, 10], [4, 10], [4, 12]] },
-  { id: 7, zh: '蘭桂坊', en: 'LAN KWAI FONG', waves: 10, diff: 1.62, credits: 210, pads: 15, theme: 7, path: [[0, 0], [7, 0], [7, 3], [1, 3], [1, 6], [7, 6], [7, 9], [1, 9], [1, 12]] },
-  { id: 8, zh: '太平山', en: 'VICTORIA PEAK', waves: 12, diff: 1.75, credits: 230, pads: 15, theme: 8, path: [[8, 0], [8, 3], [2, 3], [2, 7], [6, 7], [6, 10], [4, 10], [4, 12]] },
+  { id: 7, zh: '蘭桂坊', en: 'LAN KWAI FONG', waves: 10, diff: 1.65, credits: 210, pads: 15, theme: 7, path: [[0, 0], [7, 0], [7, 3], [1, 3], [1, 6], [7, 6], [7, 9], [1, 9], [1, 12]] },
+  { id: 8, zh: '太平山', en: 'VICTORIA PEAK', waves: 12, diff: 1.8, credits: 230, pads: 15, theme: 8, path: [[8, 0], [8, 3], [2, 3], [2, 7], [6, 7], [6, 10], [4, 10], [4, 12]] },
 ];
 export const ENDLESS_MAP = { id: 0, zh: '無限核心', en: 'INFINITE CORE', waves: Infinity, diff: 1.0, credits: 200, pads: 24, theme: 3, endless: true,
   path: [[0, 0], [8, 0], [8, 12], [0, 12], [0, 3], [6, 3], [6, 10], [2, 10], [2, 5], [4, 5], [4, 8]] };
