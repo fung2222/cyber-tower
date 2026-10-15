@@ -94,3 +94,9 @@ html[data-lang="en"] .screen.hero .title { font-size: clamp(40px, 5.4vw, 72px); 
 
 .menu-home .menu-cta .neon-btn { min-width: 240px; }
 .menu-home .menu-top #btn-endless { animation: none; }
+
+.menu-home .menu-cta .neon-btn { min-width: 240px; }
+.menu-home .menu-sec .neon-btn { animation: none; min-width: 200px; }
+@media (max-width: 760px) {
+  .menu-home .menu-cta .neon-btn, .menu-home .menu-sec .neon-btn { min-width: 0; width: 100%; }
+}
