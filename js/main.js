@@ -1,7 +1,7 @@
 // NEON BASTION 霓虹堡壘 — controller: states, campaign / endless, radial build menu, tower panel, HUD, camera,
 // CYBER ARCADE hub hooks (?hub=1&tier&ads&trial&trialLeft&ret), ad hooks, autopilot demo / attract.
 import * as THREE from 'three';
-import { i18n, t, flags, createStore, createStage, ThemeController, U, Particles, Shockwaves, FxState, NeonCity, createInput, CyberUI, Platform, createAds } from 'cyber-kit';
+import { i18n, t, flags, createStore, createStage, ThemeController, U, Particles, Shockwaves, FxState, NeonCity, createInput, CyberUI, Platform, createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu } from 'cyber-kit';
 import { GAME_ID, MAPS, ENDLESS_MAP, mapById, TOWERS, TOWER_ORDER, ENEMIES, CONTINUE_HP, TRIAL, STEP, GRID, starsFor, cellPos, ADS } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
@@ -384,6 +384,10 @@ ui.on('btn-mute', () => { audio.init(); ui.setMuted(audio.toggleMute()); });
 ui.on('btn-retry', retry); ui.on('btn-menu', overToMenu); ui.on('btn-revive', revive);
 ui.on('btn-next', nextMap); ui.on('btn-win-retry', () => startRun(S.mapId)); ui.on('btn-win-menu', showStart);
 ui.on('btn-unlock', returnToHub); ui.on('btn-trial-back', showStart);
+const __hubMenu = readHub();
+if (shouldShowArcadeMenu(__hubMenu)) { const b = document.getElementById('btn-arcade-menu'); if (b) b.classList.remove('hidden'); }
+ui.on('btn-arcade-menu', () => { try { audio.back(); } catch {} kitReturnToHub({ gameId: GAME_ID, openStore: false }); });
+
 i18n.bindToggle($('btn-lang')); i18n.bindToggle($('btn-lang2'));
 i18n.onChange(() => { refreshStart(); if (S.state === 'maps') renderMaps(); if (S.state === 'over') reviveText(); if (S.state === 'trial') $('trial-text').textContent = S.trialKind === 'endless' ? t('trialEndless', { n: TRIAL.endlessWave }) : t('trialMap'); if (S.sel) { const tw = selTower(); if (tw) openTower(tw); else if (S.sel.kind === 'pad') openBuild(S.sel.c, S.sel.r); } updateHUD(); });
 Platform.onBack(() => { if (ui.closeModal()) return true; if (S.sel) { closeRadial(); return true; } if (S.state === 'playing') { pause(); return true; } if (S.state === 'paused') { resume(); return true; } if (S.state === 'over') { overToMenu(); return true; } if (S.state === 'maps' || S.state === 'win' || S.state === 'trial') { showStart(); return true; } return false; });
