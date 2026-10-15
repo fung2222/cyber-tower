@@ -90,4 +90,7 @@ html[data-lang="en"] .screen.hero .title { font-size: clamp(40px, 5.4vw, 72px); 
 /* trial prompt: keep the title to one or two lines on phones */
 #screen-trial .title2 { font-size: clamp(30px, 8.5vw, 52px); line-height: 1.1; }
 
-/* hub return */ #btn-arcade-menu { margin-top: 10px; animation: none; }
+/* hub return */ #btn-arcade-menu { margin-top: 0; animation: none; }
+
+.menu-home .menu-cta .neon-btn { min-width: 240px; }
+.menu-home .menu-top #btn-endless { animation: none; }
