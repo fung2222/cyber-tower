@@ -388,7 +388,7 @@ const __hubMenu = readHub();
 if (shouldShowArcadeMenu(__hubMenu)) { const b = document.getElementById('btn-arcade-menu'); if (b) b.classList.remove('hidden'); }
 ui.on('btn-arcade-menu', () => { try { audio.back(); } catch {} kitReturnToHub({ gameId: GAME_ID, openStore: false }); });
 
-i18n.bindToggle($('btn-lang')); i18n.bindToggle($('btn-lang2'));
+i18n.bindToggle($('btn-lang2')); // start lang folded into settings gear
 
 ui.mountHowto({
   privacyUrl: './privacy.html',
