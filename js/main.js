@@ -441,13 +441,25 @@ function fitDistance(dir, look, lim) {
   return hi;
 }
 function frameCamera(dt, now, instant = false) {
-  const aspect = stage.width / stage.height, portrait = aspect < 0.9, menu = S.state === 'attract' || S.state === 'maps';
-  const pitch = THREE.MathUtils.degToRad(portrait ? 60 : 54);
+  const aspect = stage.width / stage.height, portrait = aspect < 0.9;
+  const home = S.state === 'attract', maps = S.state === 'maps', menu = home || maps;
+  // Attract/home: frame the map in the MID breathing gap (brand top → Start CTA). Maps / play keep prior framing.
+  const pitch = THREE.MathUtils.degToRad(portrait ? (home ? 52 : 60) : (home ? 48 : 54));
   const yaw = menu ? Math.sin(now * 0.12) * 0.22 : 0;
   const dir = new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
-  tL.set(menu && !portrait ? -5.2 : 0, 0, menu && portrait ? HD + 2.4 : portrait ? 0.35 : 0.15);   // portrait menu: aim below the board so it sits above the hero panel
-  const lim = portrait ? { x: 0.98, top: menu ? 0.9 : 0.74, bottom: menu ? 0.02 : -0.82 } : { x: menu ? 0.95 : 0.66, top: 0.86, bottom: -0.84 };
-  const d = fitDistance(dir, tL, lim) * (menu && portrait ? 1.0 : 1);
+  let lim;
+  if (home) {
+    // Portrait: lift (+z) into mid gap. Desktop: drop map into lower mid (brand is heavy / left wash).
+    tL.set(portrait ? 0 : -1.0, 0, portrait ? 0.55 : -0.55);
+    lim = portrait ? { x: 0.84, top: 0.18, bottom: -0.28 } : { x: 0.55, top: 0.02, bottom: -0.36 };
+  } else if (maps) {
+    tL.set(!portrait ? -5.2 : 0, 0, portrait ? HD + 2.4 : 0.15);   // maps: keep map above the picker panel
+    lim = portrait ? { x: 0.98, top: 0.9, bottom: 0.02 } : { x: 0.95, top: 0.86, bottom: -0.84 };
+  } else {
+    tL.set(0, 0, portrait ? 0.35 : 0.15);
+    lim = portrait ? { x: 0.98, top: 0.74, bottom: -0.82 } : { x: 0.66, top: 0.86, bottom: -0.84 };
+  }
+  const d = fitDistance(dir, tL, lim) * (home && portrait ? 1.0 : 1);
   tP.copy(tL).addScaledVector(dir, d);
   const k = instant ? 1 : 1 - Math.exp(-dt * 3.5);
   camPos.lerp(tP, k); camLook.lerp(tL, k); camera.position.copy(camPos); camera.lookAt(camLook); fx.shake(camera, now, 0.5);
