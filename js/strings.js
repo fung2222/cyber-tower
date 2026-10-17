@@ -41,4 +41,7 @@ i18n.add({
   noHub: ['請喺 CYBER ARCADE App 解鎖', 'Unlock in the CYBER ARCADE app'],
   speed2: ['2× 加速', '2× SPEED'], speed1: ['1× 正常', '1× SPEED'],
   fatal: ['載入失敗', 'Failed to start'],
+
+  'help.rules': ['<ul><li>塔防：沿路徑放置砲塔擋住敵人波次。</li><li>賺能量升級／賣塔；守住核心。</li><li>揀地圖同試煉模式挑戰更高難度。</li></ul>', '<ul><li>Tower defense: place turrets along the path to stop waves.</li><li>Earn energy to upgrade/sell; protect the core.</li><li>Pick maps and trial modes for harder runs.</li></ul>'],
+  'help.controls': ['<ul><li>起塔：點格子 → 選塔（鍵盤 1–5）</li><li>升級／出售：點塔 · <kbd>U</kbd> / <kbd>X</kbd></li><li>下一波：底部掣 · <kbd>Space</kbd>/<kbd>Enter</kbd></li><li>速度 <kbd>F</kbd> · 暫停 <kbd>P</kbd> · 靜音 <kbd>M</kbd></li></ul>', '<ul><li>Build: tap pad → pick tower (keys 1–5)</li><li>Upgrade/sell: tap tower · <kbd>U</kbd> / <kbd>X</kbd></li><li>Next wave: button · <kbd>Space</kbd>/<kbd>Enter</kbd></li><li>Speed <kbd>F</kbd> · Pause <kbd>P</kbd> · Mute <kbd>M</kbd></li></ul>'],
 });
