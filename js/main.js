@@ -450,8 +450,9 @@ function frameCamera(dt, now, instant = false) {
   let lim;
   if (home) {
     // Portrait: lift (+z) into mid gap. Desktop: drop map into lower mid (brand is heavy / left wash).
-    tL.set(portrait ? 0 : -1.0, 0, portrait ? 0.55 : -0.55);
-    lim = portrait ? { x: 0.84, top: 0.18, bottom: -0.28 } : { x: 0.55, top: 0.02, bottom: -0.36 };
+    tL.set(portrait ? 0 : -1.0, 0, portrait ? 0.5 : -0.5);
+    // Widen NDC band toward brandBot→ctaTop, then pull closer (~2× on-screen vs prior mid framing).
+    lim = portrait ? { x: 0.92, top: 0.22, bottom: -0.38 } : { x: 0.62, top: 0.06, bottom: -0.38 };
   } else if (maps) {
     tL.set(!portrait ? -5.2 : 0, 0, portrait ? HD + 2.4 : 0.15);   // maps: keep map above the picker panel
     lim = portrait ? { x: 0.98, top: 0.9, bottom: 0.02 } : { x: 0.95, top: 0.86, bottom: -0.84 };
@@ -459,7 +460,7 @@ function frameCamera(dt, now, instant = false) {
     tL.set(0, 0, portrait ? 0.35 : 0.15);
     lim = portrait ? { x: 0.98, top: 0.74, bottom: -0.82 } : { x: 0.66, top: 0.86, bottom: -0.84 };
   }
-  const d = fitDistance(dir, tL, lim) * (home && portrait ? 1.0 : 1);
+  const d = fitDistance(dir, tL, lim) * (home ? (portrait ? 0.55 : 0.62) : 1);
   tP.copy(tL).addScaledVector(dir, d);
   const k = instant ? 1 : 1 - Math.exp(-dt * 3.5);
   camPos.lerp(tP, k); camLook.lerp(tL, k); camera.position.copy(camPos); camera.lookAt(camLook); fx.shake(camera, now, 0.5);
