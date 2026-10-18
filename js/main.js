@@ -1,7 +1,9 @@
 // NEON BASTION 霓虹堡壘 — controller: states, campaign / endless, radial build menu, tower panel, HUD, camera,
 // CYBER ARCADE hub hooks (?hub=1&tier&ads&trial&trialLeft&ret), ad hooks, autopilot demo / attract.
 import * as THREE from 'three';
-import { i18n, t, flags, createStore, createStage, ThemeController, U, Particles, Shockwaves, FxState, NeonCity, createInput, CyberUI, Platform, createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu } from 'cyber-kit';
+import { i18n, t, flags, createStore, createStage, ThemeController, U, Particles, Shockwaves, FxState, NeonCity, createInput, CyberUI, Platform, createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu,
+  ViewInput, defaultView, clampView, dampView
+} from 'cyber-kit';
 import { GAME_ID, MAPS, ENDLESS_MAP, mapById, TOWERS, TOWER_ORDER, ENEMIES, CONTINUE_HP, TRIAL, STEP, GRID, starsFor, cellPos, ADS } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
@@ -76,7 +78,7 @@ function newGame(mapId, { attract = false } = {}) {
   S.ai = attract || S.demo ? createAI({ skill: 0.8 }) : null;
   frameCamera(0, 0, true); updateHUD();
 }
-function startRun(mapId) {
+function startRun(mapId) { resetPlayView(true);
   if (trialLocked(mapId)) { showTrial('map'); return; }
   audio.init(); audio.startMusic(); audio.unduckMusic();
   newGame(mapId); setState('playing'); audio.confirm();
@@ -93,6 +95,7 @@ function setState(s) {
   updateHUD();
 }
 function showStart() {
+  resetPlayView(true);
   if (S.state !== 'maps') attract();
   setState('attract'); refreshStart(); audio.duckMusic && audio.unduckMusic();
 }
@@ -346,12 +349,6 @@ function resume() { if (S.state !== 'paused') return; setState('playing'); audio
 function toggleSpeed() { S.speed = S.speed === 1 ? 2 : 1; store.setNum('speed', S.speed); audio.click(); ui.toast(t(S.speed === 2 ? 'speed2' : 'speed1'), 800); updateHUD(); }
 
 // ---------------------------------------------------------------- input
-const cv = $('scene'); let down = null;
-cv.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId }; });
-cv.addEventListener('pointerup', (e) => {
-  if (!down || e.pointerId !== down.id) return; const d = Math.hypot(e.clientX - down.x, e.clientY - down.y), dt = performance.now() - down.t; down = null;
-  if (d > 16 || dt > 700) return; onTap(e.clientX, e.clientY);
-});
 function onTap(x, y) {
   if (S.state !== 'playing' || S.demo) return;
   const g = S.game, cell = view.cellAt(x, y);
@@ -427,9 +424,24 @@ S.api = {
   unlockAll() { for (const m of MAPS) setStars(m.id, 1); if (S.state === 'maps') renderMaps(); refreshStart(); },
 };
 
-// ---------------------------------------------------------------- camera
+// ---------------------------------------------------------------- camera + in-play view (pinch zoom / drag orbit)
 const fitCam = new THREE.PerspectiveCamera(40, 1, 0.1, 500), camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tP = new THREE.Vector3(), tL = new THREE.Vector3();
 const HW = GRID.w / 2 + 0.3, HD = GRID.h / 2 + 0.3, PTS = [[-HW, 0, -HD], [HW, 0, -HD], [-HW, 0, HD], [HW, 0, HD], [-HW, 0.9, -HD], [HW, 0.9, -HD]].map((p) => new THREE.Vector3(...p));
+const camOff = defaultView(), camOffC = defaultView(), VIEW_EXT = [HW, HD];
+let viewPitch = 1.0;
+const inMatch = () => (S.state === 'playing' || S.state === 'paused') && !S.demo;
+const gesturesOn = () => inMatch() && !ui.modalOpen && !S.sel;
+function resetPlayView(instant = true) { Object.assign(camOff, defaultView()); if (instant) Object.assign(camOffC, defaultView()); }
+new ViewInput($('scene'), {
+  enabled: gesturesOn,
+  down: () => { audio.init(); },
+  zoom: (f) => { camOff.zoom *= f; clampView(camOff, viewPitch, VIEW_EXT); },
+  twist: (d) => { camOff.az += d; clampView(camOff, viewPitch, VIEW_EXT); },
+  pan: (x0, y0, x1, y1) => { const k = 0.012; camOff.px += (x0 - x1) * k; camOff.pz += (y0 - y1) * k; clampView(camOff, viewPitch, VIEW_EXT); },
+  orbit: (dAz, dEl) => { camOff.az += dAz; camOff.el += dEl; clampView(camOff, viewPitch, VIEW_EXT); },
+  tap: (x, y) => onTap(x, y),
+}, { oneFingerOrbit: true });
+
 function fitDistance(dir, look, lim) {
   fitCam.aspect = stage.width / stage.height; fitCam.updateProjectionMatrix();
   let lo = 4, hi = 80; const v = new THREE.Vector3();
@@ -443,10 +455,12 @@ function fitDistance(dir, look, lim) {
 function frameCamera(dt, now, instant = false) {
   const aspect = stage.width / stage.height, portrait = aspect < 0.9;
   const home = S.state === 'attract', maps = S.state === 'maps', menu = home || maps;
+  const useView = inMatch();
+  if (menu) resetPlayView(true);
   // Attract/home: frame the map in the MID breathing gap (brand top → Start CTA). Maps / play keep prior framing.
-  const pitch = THREE.MathUtils.degToRad(portrait ? (home ? 52 : 60) : (home ? 48 : 54));
-  const yaw = menu ? Math.sin(now * 0.12) * 0.22 : 0;
-  const dir = new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
+  let pitch = THREE.MathUtils.degToRad(portrait ? (home ? 52 : 60) : (home ? 48 : 54));
+  viewPitch = pitch;
+  let yaw = menu ? Math.sin(now * 0.12) * 0.22 : 0;
   let lim;
   if (home) {
     // Portrait: lift (+z) into mid gap. Desktop: drop map into lower mid (brand is heavy / left wash).
@@ -460,7 +474,14 @@ function frameCamera(dt, now, instant = false) {
     tL.set(0, 0, portrait ? 0.35 : 0.15);
     lim = portrait ? { x: 0.98, top: 0.74, bottom: -0.82 } : { x: 0.66, top: 0.86, bottom: -0.84 };
   }
-  const d = fitDistance(dir, tL, lim) * (home ? (portrait ? 0.55 : 0.62) : 1);
+  let d = fitDistance(new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)), tL, lim) * (home ? (portrait ? 0.55 : 0.62) : 1);
+  if (useView && !menu) {
+    clampView(camOff, viewPitch, VIEW_EXT);
+    if (!instant) dampView(camOffC, camOff, Math.max(dt, 1 / 120)); else Object.assign(camOffC, camOff);
+    yaw += camOffC.az; pitch = viewPitch + camOffC.el; d *= camOffC.zoom;
+    tL.x += camOffC.px; tL.z += camOffC.pz;
+  }
+  const dir = new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
   tP.copy(tL).addScaledVector(dir, d);
   const k = instant ? 1 : 1 - Math.exp(-dt * 3.5);
   camPos.lerp(tP, k); camLook.lerp(tL, k); camera.position.copy(camPos); camera.lookAt(camLook); fx.shake(camera, now, 0.5);
