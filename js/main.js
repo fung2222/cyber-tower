@@ -224,7 +224,7 @@ function doBuild(type) {
   const g = S.game, s = S.sel; if (!s || s.kind !== 'pad') return;
   if (g.credits < TOWERS[type].cost[0]) { audio.denied(); ui.toast(t('noCredits'), 900); return; }
   const tw = g.build(type, s.c, s.r); if (!tw) { audio.denied(); return; }
-  Platform.haptic('light'); openTower(tw); updateHUD();
+  Platform.haptic('light'); closeRadial(); updateHUD();
 }
 function doUpgrade() {
   const g = S.game, tw = selTower(); if (!tw) return;

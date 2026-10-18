@@ -81,17 +81,15 @@ async def run(b, name, w, h, mobile, lang):
     check(await poll(pg, "__td.game.towers.size === 1", 3000), 'laser built')
     c1 = await pg.evaluate("__td.game.credits")
     check(c0 - c1 == 50, f'laser cost 50 ({c0}->{c1})')
-    # building opens the tower menu straight away; tapping the same cell closes it, tapping again re-opens it
-    check(await poll(pg, "!!document.querySelector('#radial [data-up]')", 3000), 'build -> tower menu (upgrade/sell)')
-    await pg.dispatch_event('#radial [data-up]', 'pointerdown')
-    check(await poll(pg, "[...__td.game.towers.values()][0].level === 2", 3000), 'tower upgraded to L2')
-    await pg.wait_for_timeout(700)
-    await tap_xy(pg, pad['x'], pad['y'], mobile)   # lands on the radial's centre close button
-    check(await poll(pg, "document.getElementById('radial').classList.contains('hidden')", 3000), 'tap selected tower closes menu')
-    await pg.wait_for_timeout(700)
+    # place closes the build menu (no keep-placing); tap the tower to open upgrade/sell
+    check(await poll(pg, "document.getElementById('radial').classList.contains('hidden')", 3000), 'build closes radial')
+    await pg.wait_for_timeout(400)
     await tap_xy(pg, pad['x'], pad['y'], mobile)
     check(await poll(pg, "!!document.querySelector('#radial [data-up]')", 3000), 'tap tower opens upgrade/sell')
     await poll(pg, RADIAL_SHOWN, 8000); await pg.wait_for_timeout(500); await shot('04-tower-menu')
+    await pg.dispatch_event('#radial [data-up]', 'pointerdown')
+    check(await poll(pg, "[...__td.game.towers.values()][0].level === 2", 3000), 'tower upgraded to L2')
+    await pg.wait_for_timeout(400)
     await pg.dispatch_event('#radial [data-sell]', 'pointerdown')
     check(await poll(pg, "__td.game.towers.size === 0", 3000), 'tower sold')
     cs = await pg.evaluate("__td.game.credits")
