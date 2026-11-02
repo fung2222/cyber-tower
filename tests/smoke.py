@@ -12,7 +12,6 @@ from playwright.async_api import async_playwright
 BASE = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('BASE_URL', 'http://127.0.0.1:18940/cyber-tower/')
 OUT = sys.argv[2] if len(sys.argv) > 2 else '/tmp/cyber-tower-shots'
 os.makedirs(OUT, exist_ok=True)
-CHROME = os.environ.get('CHROME', '/usr/bin/google-chrome')
 ARGS = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required']
 fails = []
 
@@ -265,7 +264,7 @@ async def demo(b):
 
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch(executable_path=CHROME, args=ARGS)
+        b = await p.chromium.launch(args=ARGS)
         hub = os.environ.get('HUB_URL', BASE + 'tests/fake-hub.html')
         only = set(filter(None, os.environ.get('SMOKE_ONLY', '').split(',')))
         want = lambda k: not only or k in only
