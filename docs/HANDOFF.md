@@ -1,7 +1,7 @@
 # NEON BASTION 霓虹堡壘 — Handoff
 
 Status: **web build done (v1.1, 2026-10-03)** · live https://fung2222.github.io/cyber-tower/ · `noindex` (not public yet) · not yet packaged for Android · CYBER ARCADE tier **Gold** (trial: maps 1–2 + endless to wave 10).
-Series rules: `fung2222/cyber-arcade/docs/ARCADE-HANDOFF.md`. Written from scratch on cyber-kit v0.2.1 (`vendor/cyber-kit/`), no build step.
+Series rules: `fung2222/cyber-arcade/docs/ARCADE-HANDOFF.md`. Written from scratch on cyber-kit v0.3.19 (`vendor/cyber-kit/`), no build step.
 
 ## 1. Design
 - **Quick, relaxing commute sessions.** One campaign map ≈ 3–5 min at 1×, playable one-handed in portrait (also fine on desktop / landscape).
@@ -68,7 +68,7 @@ Android back: menu → pause → resume; game over → menu; maps/win/trial → 
 ## 5. Endless mode & i18n
 - No final state: after any number of waves `canCallWave()` stays true. HP growth saturates, speed is capped, wave size is capped after wave 60, and bosses scale slower than the crowd, so it stays playable but is never beatable (towers top out at L3 on 24 pads).
 - Natural ad-break points: **only** the game-over screen (after the player taps Retry / Menu). Never mid-wave, never at the milestone banner.
-- Strings: `js/strings.js` (`{key: [zh-HK, en]}`, cyber-kit `i18n`). HTML uses `data-i18n*`; dynamic text uses `t()`. Toggles: `#btn-lang` (start) and `#btn-lang2` (pause). Persisted in `localStorage cyber.lang` (shared by all CYBER games); `?lang=en|zh` forces.
+- Strings: `js/strings.js` (`{key: [zh-HK, en]}`, cyber-kit `i18n`). HTML uses `data-i18n*`; dynamic text uses `t()`. Language lives in the gear settings sheet; pause also has `#btn-lang2`. Persisted in `localStorage cyber.lang` (shared by all CYBER games); `?lang=en|zh` forces.
 
 ## 6. CYBER ARCADE hub hooks
 URL params (from the hub's launch URL): `?hub=1&tier=free|silver|gold&ads=0|1&trial=0|1&trialLeft=N&ret=<hub page URL>`.
@@ -92,7 +92,7 @@ js/view.js       Three.js board: glass slab + grid shader, flowing path tiles, p
 js/audio.js      TowerAudio (cyber-kit SynthAudio, 'chill' music, per-tower SFX)
 js/strings.js    zh-HK / EN strings
 js/main.js       states, input, radial menus, camera framing, effects, hub hooks, ads, save
-vendor/cyber-kit cyber-kit v0.3.0
+vendor/cyber-kit cyber-kit v0.3.19
 tests/           logic.test.mjs, balance.mjs, smoke.py, demo_run.py, fake-hub.html
 ```
 Test hook: `window.__td` (state, game, speed, mapId, `api.ff(sec) / tap(c,r) / pads() / screenOf / autopilot / lose / win / wave(n) / money(n) / unlockAll / settled`).
