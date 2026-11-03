@@ -2,7 +2,7 @@
 // CYBER ARCADE hub hooks (?hub=1&tier&ads&trial&trialLeft&ret), ad hooks, autopilot demo / attract.
 import * as THREE from 'three';
 import { i18n, t, flags, createStore, createStage, ThemeController, U, Particles, Shockwaves, FxState, NeonCity, createInput, CyberUI, Platform, createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu,
-  ViewInput, defaultView, clampView, dampView
+  ViewInput, defaultView, clampView, dampView, bindStartLoading
 } from 'cyber-kit';
 import { GAME_ID, MAPS, ENDLESS_MAP, mapById, TOWERS, TOWER_ORDER, ENEMIES, CONTINUE_HP, TRIAL, STEP, GRID, starsFor, cellPos, ADS } from './config.js';
 import './strings.js';
@@ -12,6 +12,7 @@ import { View } from './view.js';
 import { TowerAudio } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
+bindStartLoading(['#btn-endless']);
 const Q = new URLSearchParams(location.search);
 // CYBER ARCADE hub launch params (see cyber-arcade docs/MONETIZATION.md §8). Without ?hub=1 the web build is the full free game.
 const ENT = (() => { try { return JSON.parse(localStorage.getItem('cyber.entitlement') || 'null'); } catch { return null; } })();   // written by the hub
